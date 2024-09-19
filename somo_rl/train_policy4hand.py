@@ -1,3 +1,7 @@
+"""
+InHandManipulation環境を実行するためのファイル
+"""
+
 import os
 import shutil
 import subprocess

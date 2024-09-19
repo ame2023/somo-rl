@@ -1,0 +1,38 @@
+
+コマンド参考
+強化学習実行コマンド
+python train_policy4hand.py -e test_exp_2 -g setup_0 -r random_seed_0
+
+python train_policy4snake.py -e test_exp -g setup_0 -r random_seed_0
+
+
+動画作成手順
+１．カレントディレクトリの移動
+cd C:\Users\controllab\Documents\Soft_Robot_somoRL\somo-rl\somo_rl\<exp_name>\group_name\run_name\video
+
+２．FFmpegコマンドを実行
+ffmpeg -framerate 30 -i video%05d.png -c:v libx264 -pix_fmt yuv420p output_video.mp4
+"""
+注意: video%05d.pngの部分は、実際のフレームのファイル名パターンに合わせて調整してください。
+例えば、trained_agent-video%05d.pngの場合は、trained_agent-video%05d.pngと指定します。
+-framerate 30: フレームレートを30fpsに設定。
+-i video%05d.png: 入力ファイルのパターン。video00001.pngから順に認識。
+-c:v libx264: H.264コーデックを使用。
+-pix_fmt yuv420p: ピクセルフォーマットを設定。
+output_video.mp4: 出力動画ファイル名。
+"""
+
+３．テストコマンド（学習済みパラメータを用いて実際に動作）実行
+python test_trained_model.py -e test_exp_2 -g setup_0 -r random_seed_0 -o ./videos/trained_agent.mp4 -l 1500
+"""
+-e, -g, -r は学習時と同じ値を指定します。
+-o は出力する動画ファイルのパスを指定します（例: ./videos/trained_agent.mp4）。
+-l は動画の長さ（ステップ数）を指定します。run_config.yamlでmax_episode_steps: 1000と設定されているため、-l 1000としています。
+"""
+
+４．videoディレクトリにフレーム画像が保存されているので、カレントディレクトリを変更
+cd C:\Users\controllab\Documents\Soft_Robot_somoRL\somo-rl_experiments\test_exp_2\setup_0\random_seed_0\video
+
+５．FFmpegコマンドを実行して動画にする
+ffmpeg -framerate 30 -i "C:/Users/controllab/Documents/Soft_Robot_somoRL/somo-rl_experiments/test_exp_2/setup_0/random_seed_0/video/frame_%05d.png" -c:v libx264 -pix_fmt yuv420p "output_video.mp4"
+
