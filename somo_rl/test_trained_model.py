@@ -9,8 +9,8 @@ import argparse
 from pathlib import Path
 import gym
 import numpy as np
-from stable_baselines3 import PPO  # 使用したアルゴリズムに合わせて変更してください
 from PIL import Image  # 画像保存のためにPillowをインポート
+from stable_baselines3.common.utils import set_random_seed
 
 # パスの設定（必要に応じて調整してください）
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -22,12 +22,38 @@ from user_settings import EXPERIMENT_ABS_PATH
 # 環境のインポート関数
 from somo_rl.utils.import_environment import import_env
 from somo_rl.utils import parse_config
+from somo_rl.utils import construct_policy_model
 
 
 def save_rgb_array(rgb_array, filename):
     """RGB配列を画像として保存"""
     img = Image.fromarray(rgb_array)
     img.save(filename)
+
+
+def make_env(env_id, run_config, max_episode_steps, run_ID=None, render=False, debug=False):
+    """
+    環境作成関数。シード設定を追加、renderとdebugフラグを追加。
+    """
+    seed = run_config.get("seed", 0)  # デフォルトでseedは0
+    set_random_seed(seed)
+    print(f"Set seed to {seed}.")
+
+    # 環境をインポート
+    import_env(run_config["env_id"])
+
+    # gym環境の作成
+    env = gym.make(
+        env_id,
+        run_config=run_config,
+        run_ID=run_ID,  # run_IDを渡す
+        render=render,
+        debug=debug,
+    )
+    env._max_episode_steps = max_episode_steps
+    env.seed(seed)
+
+    return env
 
 
 def record_video(
@@ -63,21 +89,18 @@ def record_video(
         print(f"ERROR: Model file not found at {model_path}")
         return 1
 
+    # 環境を先に作成
+    env = make_env(env_id, run_config, run_config["max_episode_steps"], run_ID)
+
     # モデルのロード
-    model = PPO.load(str(model_path))
-
-    # 環境の作成
-    def make_env():
-        env = gym.make(
-            env_id,
-            run_config=run_config,
-        )
-        env.render_mode = "rgb_array"  # render_modeを明示的に設定
-        env._max_episode_steps = run_config["max_episode_steps"]
-        return env
-
-    # 環境の作成と動画録画の設定
-    env = make_env()
+    model = construct_policy_model.construct_policy_model(
+        run_config["alg"],          
+        run_config["policy"],        
+        env,                         # 環境を渡す
+        policy_kwargs={},            # 必要に応じてrun_configから取得可能
+        tensorboard_log=None,        # ログは必要に応じて指定
+        verbose=1                    # ログ出力の詳細度
+    ).load(str(model_path))
 
     # 動画保存先ディレクトリを指定された場所に設定
     video_folder = run_dir / "video"

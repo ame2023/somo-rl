@@ -1,7 +1,3 @@
-"""
-InHandManipulation環境を実行するためのファイル
-"""
-
 import os
 import shutil
 import subprocess
@@ -440,11 +436,11 @@ def run(
     # 追加のメトリクス用コールバックを追加
     additional_callbacks = []
     if run_config["alg"] == "SAC":
-        alpha_logging_callback = AlphaLoggingCallback(monitoring_dir)
+        alpha_logging_callback = AlphaLoggingCallback(results_dir)
         additional_callbacks.append(alpha_logging_callback)
     elif run_config["alg"] == "TD3":
-        action_variance_logging_callback = ActionVarianceLoggingCallback(monitoring_dir)
-        target_policy_noise_logging_callback = TargetPolicyNoiseLoggingCallback(monitoring_dir)
+        action_variance_logging_callback = ActionVarianceLoggingCallback(results_dir)
+        target_policy_noise_logging_callback = TargetPolicyNoiseLoggingCallback(results_dir)
         additional_callbacks.extend([action_variance_logging_callback, target_policy_noise_logging_callback])
 
     # コールバックリストに追加コールバックを含める
